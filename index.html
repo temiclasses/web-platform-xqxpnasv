@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Update Map Information</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href=" https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+      <style>
+    * { font: 18px Calibri; } 
+    table { width: auto; }
+    table, th, td { 
+      border: solid 1px #DDD;
+      border-collapse: collapse; 
+      padding: 2px 3px; 
+      text-align: center;
+    }
+  </style>
+<!--   <style> body { border: solid 2px;} </style> -->
+</head>
+
+<font style="border:blue; border-width:10px; border-style:outset;">
+Inbound Envelope </font>
+<br>
+<br>
+<br>
+<br>
+
+<body onload="createTable()">
+    <div id = "FormDiv">
+    <form id = "SelectFormMapName">
+     	<label for="fname">Envelop name: </label>
+  <input type="text" id="Ename" name="Ename"><br><br>
+  <label for="lname">Envelop search: </label>
+  <input type="text" id="ESearch" name="ESearch"><br><br>
+  
+  <H1>Envelop definitions </H1>
+ <!--  <input type="submit" value="Submit"> -->
+	</form>   	
+   </div>
+   <script type="text/javascript" src="script.js"></script>
+   <br>
+   <br>
+   <br>
+   <p>
+<input type="button" id="addRow" value="+" onclick="addRow()" />
+</p>
+
+<div id="cont"></div>  <!-- the container to add the TABLE -->
+
+<p>
+<input type="button" id="bt" value="Submit Data" onclick="submit()" />
+</p>
+    
+<p id='output'></p>
+</body>
+</h1>
+</html>
+<html>
+<script>
+  let arrHead = new Array();	// array for header.
+  arrHead = ['', 'TPName',	'TransactionID',	'Functionalcode',	'DirectionI/O',	'CustomerORSupplier (C or S)',	'BusinessUnit',	'Test_TPQualifier',	'Test_TPISAID',	'Test_TPGSID',	'Prd_TPQualifier',	'Prd_TPISAID',	'Prd_TPGSID',	'ComplianceMapName',	'ComplianceChecking',	'Test_ABCQual',	'Test_ABCISAID',	'Test_ABCGSID',	'Prd_ABCQual',	'Prd_ABCISAID',	'Prd_ABCGSID',	'Comments',	'Acknowledgement'	];
+
+  
+  // first create TABLE structure with the headers. 
+  let createTable = () => {
+    let envTable = document.createElement('table');
+    envTable.setAttribute('id', 'envTable'); // table id.
+
+    let tr = envTable.insertRow(-1);
+    for (let h = 0; h < arrHead.length; h++) {
+      let th = document.createElement('th'); // create table headers
+      th.innerHTML = arrHead[h];
+      tr.appendChild(th);
+    }
+
+    let div = document.getElementById('cont');
+    div.appendChild(envTable);  // add the TABLE to the container.
+  }
+
+  // now, add a new row to the TABLE.
+  let addRow = () => {
+    let envTab = document.getElementById('envTable');
+
+    let rowCnt = envTab.rows.length;   // table row count.
+    let tr = envTab.insertRow(rowCnt); // the table row.
+    tr = envTab.insertRow(rowCnt);
+
+    for (let c = 0; c < arrHead.length; c++) {
+      let td = document.createElement('td'); // table definition.
+      td = tr.insertCell(c);
+
+      if (c === 0) {      // the first column.
+        // add a button in every new row in the first column.
+        let button = document.createElement('input');
+
+        // set input attributes.
+        button.setAttribute('type', 'button');
+        button.setAttribute('value', 'delete');
+
+        // add button's 'onclick' event.
+        button.setAttribute('onclick', 'removeRow(this)');
+
+        td.appendChild(button);
+      }
+      else {
+        // Direction & CustomerORSupplier is having the dropdown, which has index 4 and 5
+        if (c == 4 || c == 5) {
+          const DirectionValues = ["Input", "Output"];
+          const CustomerORSupplierValues = ["Customer", "Supplier"];
+
+          let values = c == 4 ? DirectionValues : CustomerORSupplierValues;
+          var select = document.createElement("select");
+          select.name = values[0];
+          select.id = values[0]
+
+          for (const val of values) {
+            var option = document.createElement("option");
+            option.value = val;
+            option.text = val.charAt(0).toUpperCase() + val.slice(1);
+            select.appendChild(option);
+          }
+          td.appendChild(select);
+        } else {
+          // 2nd, 3rd and 4th column, will have textbox.
+          let ele = document.createElement('input');
+          ele.setAttribute('type', 'text');
+          ele.setAttribute('value', '');
+
+          td.appendChild(ele);
+        }
+      }
+    }
+  }
+
+  // delete TABLE row function.
+  let removeRow = (oButton) => {
+    let envTab = document.getElementById('envTable');
+   
+    envTab.deleteRow(oButton.parentNode.parentNode.rowIndex); 
+    // button -> td -> tr.
+  }
+
+  // function to extract and submit table data.
+  let submit = () => {
+    let myTab = document.getElementById('envTable');
+    let arrValues = new Array();
+
+    // loop through each row of the table.
+    for (row = 1; row < myTab.rows.length - 1; row++) {
+      // loop through each cell in a row.
+      for (c = 0; c < myTab.rows[row].cells.length; c++) {  
+        let element = myTab.rows.item(row).cells[c];
+        if (element.childNodes[0].getAttribute('type') != 'button') {
+          arrValues.push("'" + element.childNodes[0].value + "'");
+        }
+      }
+    }
+
+    // The final output.
+    document.getElementById('output').innerHTML = arrValues;
+    //console.log (arrValues);   // you can see the array values in your browsers console window. Thanks :-) 
+  }
+</script>
+</html>
